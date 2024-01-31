@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 import subprocess
 import pprint as pp
 import re
@@ -7,7 +7,13 @@ import datetime
 import argparse
 
 '''
-version: '1.2'
+version: '0.1.3'
+
+Скрипт для взаимоствия с kkd-ctl:
+- делает бекап конфигурационного файла
+- загружает конфиг файл 
+- применяет его 
+
 '''
 
 now = datetime.datetime.now()
@@ -33,7 +39,7 @@ prod_route = '/usr/local/bin/kubectl --kubeconfig /home/eugen/k8home/kkd-k8s-prd
 
 
 
-
+#Получаем имя пода
 def get_pod_name(name, command):
     name = name+'.*'
 
@@ -52,17 +58,19 @@ def get_pod_name(name, command):
             return pod_name
 
 
-
+#Выводим имя пода
 def inner_pod_command(route, name,command):
     str =route + f' exec -i {{name}} -- {{command}}'.format(name=name, command=command)
     return str
 
 
 
-
-def get_dump(route,command):
+#Делаем дамп конфиг файла
+def get_dump(route,command,  cluster_name):
+    cluster_name = cluster_name
+    tar_name = f'config_{{cluster_name}}_{{date}}.tar.gz'.format(cluster_name=cluster_name, date=date)
     name = get_pod_name('kkd-ctl', command)
-    config_name = f'config_bkp_stage_{{date}}.json'.format(date=date)
+    config_name = f'config_bkp_{{cluster_name}}_{{date}}.json'.format(cluster_name=cluster_name, date=date)
 
     #Команды
     command_ls = 'ls -al'
@@ -71,8 +79,9 @@ def get_dump(route,command):
         .format(name=name, config_name=config_name)
 
     make_tar = f'tar -cvzf config.tar.gz  {{config_name}}'.format(config_name=config_name)
-    # get_error_log = f'cp {{name}}:/opt/msp/kkdctl/config.tar.gz ~/kkd_files/config.tar.gz'.format(name=name)
-    get_tar = f'cp {{name}}:/opt/msp/kkdctl/config.tar.gz ~/kkd_files/config.tar.gz'.format(name=name)
+    get_tar = f'cp {{name}}:/opt/msp/kkdctl/{{tar_name}}' \
+              f' ~/kkd_files/{{tar_name}}'\
+        .format(name=name,tar_name=tar_name)
     #полный вариант на выполнение
     #Делаем дамп
 
@@ -85,7 +94,8 @@ def get_dump(route,command):
     #переносим конфиг на локальный
     # os.system(route + f' {{command}}'.format(command=save_dump))
     os.system(route + f' {{command}}'.format(command=get_tar))
-
+    #Распаковочка
+    os.system(f'tar -xvf {{tar_name}} -C ~/kkd_files/'.format(tar_name=tar_name))
 
 def load_config(route,command):
     name = get_pod_name('kkd-ctl', command)
