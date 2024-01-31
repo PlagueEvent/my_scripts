@@ -17,7 +17,7 @@ version: '0.1.4'
 
 '''
 
-'''Дальше идут персональные настройки'''
+'''Персональные настройки'''
 kubectl = '/usr/local/bin/kubectl'
 kubeconf_stage = '/home/eugen/k8home/kkd-k8s-cls'
 kubeconf_prod = '/home/eugen/k8home/kkd-k8s-prd'
@@ -59,7 +59,7 @@ def get_pod_name(name, command):
             return pod_name
 
 
-#Выводим имя пода
+#Получаем полное имя целевого пода
 def inner_pod_command(route, name,command):
     str =route + f' exec -i {{name}} -- {{command}}'.format(name=name, command=command)
     return str
@@ -74,33 +74,22 @@ def get_dump(route,command,  cluster_name):
     #Команды
     command_ls = 'ls -al'
     create_dump = f'kkdctl config dump --config="{{config_name}}" --force'.format(config_name=config_name)
-
-    # save_dump = f'cp {{name}}:/opt/msp/kkdctl/{{config_name}} ~/kkd_files/{{config_name}}'\
-    #     .format(name=name, config_name=config_name)
-
     make_tar = f'tar -cvzf {{tar_name}}  {{config_name}}'\
         .format(tar_name=tar_name,config_name=config_name)
-
     get_tar = f'cp {{name}}:/opt/msp/kkdctl/{{tar_name}}' \
               f' ~/kkd_files/{{tar_name}}'\
         .format(name=name,tar_name=tar_name)
-    #полный вариант на выполнение
-    #Делаем дамп
 
+    #Делаем дамп
     os.system(inner_pod_command(route, name, create_dump))
     os.system(inner_pod_command(route, name, make_tar))
-
-    #смотрим что у нас все ок
-    
-
     #переносим конфиг на локальный
-    # os.system(route + f' {{command}}'.format(command=save_dump))
     os.system(route + f' {{command}}'.format(command=get_tar))
     #Распаковочка
     sleep(5)
     os.system(f'tar -xvf ~/kkd_files/{{tar_name}} -C ~/kkd_files'.format(tar_name=tar_name))
 
-def load_config(route,command):
+def upload_config(route,command):
     name = get_pod_name('kkd-ctl', command)
     new_config_name = f'kkd_configuration_service.json'
 
@@ -142,7 +131,6 @@ if __name__ == '__main__':
     except:
         print("ошибка в выборе целевого контура")
 
-
     try:
         if args.test == True:
             get_pod_name("kkd-ctl", command)
@@ -157,6 +145,13 @@ if __name__ == '__main__':
 
     try:
         if args.upload_config == True:
-            load_config(route, command)
+            upload_config(route, command)
     except:
         print('ОШИБКАБЛЕАТЬ!!!!1111 в загрузке файла')
+
+
+#TODO 1. Добавить опцию force для дампа
+#TODO 2. Добавить удаление каталога репы и ее новое клонирование (kkd-configuration)
+#TODO 3. Добавить применение конфига, ls, чтобы убедиться, что он применился
+#TODO 4. Удаление пода  (kkd-configuration-service)
+#TODO 5. Добавить опцию удаления (любого пода) пода
