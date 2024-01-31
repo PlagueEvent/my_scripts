@@ -146,15 +146,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
+#Заполняем ключи для корректного получения дампа
     try:
         if args.target == 'stage':
             route = stage_route
             command = command_stage
+            cluster_name = 'stage'
             print("route: ", route, "command: ", command)
         elif args.target == 'prod':
             route = prod_route
             command = command_prod
+            cluster_name = 'prod'
     except:
         print("ошибка в выборе целевого контура")
 
@@ -167,7 +169,7 @@ if __name__ == '__main__':
 
     try:
         if args.get_dump == True:
-            get_dump(route, command)
+            get_dump(route, command, cluster_name)
     except:
         print('ОШИБКАБЛЕАТЬ!!!!1111: во время дампа')
 
