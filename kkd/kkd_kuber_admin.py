@@ -17,13 +17,16 @@ version: '0.1.4'
 
 '''
 
-now = datetime.datetime.now()
-date = now.strftime("%d%m%Y")
-
+'''Дальше идут персональные настройки'''
 kubectl = '/usr/local/bin/kubectl'
-
 kubeconf_stage = '/home/eugen/k8home/kkd-k8s-cls'
 kubeconf_prod = '/home/eugen/k8home/kkd-k8s-prd'
+stage_route = '/usr/local/bin/kubectl --kubeconfig /home/eugen/k8home/kkd-k8s-cls  --namespace kkd3-stage'
+prod_route = '/usr/local/bin/kubectl --kubeconfig /home/eugen/k8home/kkd-k8s-prd  --namespace kkd3-prod'
+
+'''Общие переменные'''
+now = datetime.datetime.now()
+date = now.strftime("%d%m%Y")
 
 command_stage = [kubectl, '--kubeconfig',
                  kubeconf_stage,
@@ -35,11 +38,8 @@ command_prod = [kubectl, '--kubeconfig',
                 'get', 'pods',
                 '--namespace', 'kkd3-prod']
 
-stage_route = '/usr/local/bin/kubectl --kubeconfig /home/eugen/k8home/kkd-k8s-cls  --namespace kkd3-stage'
-prod_route = '/usr/local/bin/kubectl --kubeconfig /home/eugen/k8home/kkd-k8s-prd  --namespace kkd3-prod'
 
-
-
+'''Функции и команды'''
 #Получаем имя пода
 def get_pod_name(name, command):
     name = name+'.*'
@@ -63,8 +63,6 @@ def get_pod_name(name, command):
 def inner_pod_command(route, name,command):
     str =route + f' exec -i {{name}} -- {{command}}'.format(name=name, command=command)
     return str
-
-
 
 #Делаем дамп конфиг файла
 def get_dump(route,command,  cluster_name):
@@ -114,32 +112,12 @@ def load_config(route,command):
     #загружаем конфиг
     os.system(route + f' {{load_config}}'.format(load_config=load_config))
 
-
-    # full_command = route + f' {{load_config}}'.format(load_config=get_error_log)
-    # os.system(full_command)
-    # print('load error - OK')
-
-    #Применяем конфиг
-    # full_command = route + f' exec -i {{name}} -- {{command}}'.format(name=name, command=apply_config)
-    # os.system(inner_pod_command(route, name, apply_config))
-    # print('apply config - OK')
-
-
 def lists(name, route):
     command_ls = 'ls -al'
     os.system(inner_pod_command(route, name, command_ls))
 
 
-
-# dump_config(stage_route)
-
-
-
-# get_pod_name('kkd-configuration-service', command_prod)
-# get_pod_name('kkd-configuration-service', command_stage)
-# get_pod_name('kkd-ctl', command_stage)
-
-
+'''Основная чать скрипта'''
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1.4')
