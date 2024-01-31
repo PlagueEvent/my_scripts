@@ -5,9 +5,10 @@ import re
 import os
 import datetime
 import argparse
+from time import sleep as sleep
 
 '''
-version: '0.1.3'
+version: '0.1.4'
 
 Скрипт для взаимоствия с kkd-ctl:
 - делает бекап конфигурационного файла
@@ -78,7 +79,9 @@ def get_dump(route,command,  cluster_name):
     save_dump = f'cp {{name}}:/opt/msp/kkdctl/{{config_name}} ~/kkd_files/{{config_name}}'\
         .format(name=name, config_name=config_name)
 
-    make_tar = f'tar -cvzf config.tar.gz  {{config_name}}'.format(config_name=config_name)
+    make_tar = f'tar -cvzf {{tar_name}}  {{config_name}}'\
+        .format(tar_name=tar_name,config_name=config_name)
+
     get_tar = f'cp {{name}}:/opt/msp/kkdctl/{{tar_name}}' \
               f' ~/kkd_files/{{tar_name}}'\
         .format(name=name,tar_name=tar_name)
@@ -95,7 +98,8 @@ def get_dump(route,command,  cluster_name):
     # os.system(route + f' {{command}}'.format(command=save_dump))
     os.system(route + f' {{command}}'.format(command=get_tar))
     #Распаковочка
-    os.system(f'tar -xvf {{tar_name}} -C ~/kkd_files/'.format(tar_name=tar_name))
+    sleep(5)
+    os.system(f'tar -xvf ~/kkd_files/{{tar_name}} -C ~/kkd_files'.format(tar_name=tar_name))
 
 def load_config(route,command):
     name = get_pod_name('kkd-ctl', command)
@@ -107,7 +111,6 @@ def load_config(route,command):
 
 
     #загружаем конфиг
-    load_config
     os.system(route + f' {{load_config}}'.format(load_config=load_config))
 
 
@@ -141,8 +144,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.1')
     parser.add_argument('-t', '--target', choices={"stage", "prod"}, help='Целевой контур')
     parser.add_argument('--test', action='store_true', help='попробовать, что получится')
-    parser.add_argument('--get_dump', action='store_true', help='получить дамп конфига')
-    parser.add_argument('--upload_config', action='store_true', help='Загрузить и применить конфига')
+    parser.add_argument('--get-dump', action='store_true', help='получить дамп конфига')
+    parser.add_argument('--upload-config', action='store_true', help='Загрузить и применить конфига')
 
     args = parser.parse_args()
 
