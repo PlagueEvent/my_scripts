@@ -76,8 +76,9 @@ def get_dump(route,command,  cluster_name):
     #Команды
     command_ls = 'ls -al'
     create_dump = f'kkdctl config dump --config="{{config_name}}" --force'.format(config_name=config_name)
-    save_dump = f'cp {{name}}:/opt/msp/kkdctl/{{config_name}} ~/kkd_files/{{config_name}}'\
-        .format(name=name, config_name=config_name)
+
+    # save_dump = f'cp {{name}}:/opt/msp/kkdctl/{{config_name}} ~/kkd_files/{{config_name}}'\
+    #     .format(name=name, config_name=config_name)
 
     make_tar = f'tar -cvzf {{tar_name}}  {{config_name}}'\
         .format(tar_name=tar_name,config_name=config_name)
@@ -141,9 +142,9 @@ def lists(name, route):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.1')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1.4')
     parser.add_argument('-t', '--target', choices={"stage", "prod"}, help='Целевой контур')
-    parser.add_argument('--test', action='store_true', help='попробовать, что получится')
+    # parser.add_argument('--test', action='store_true', help='попробовать, что получится')
     parser.add_argument('--get-dump', action='store_true', help='получить дамп конфига')
     parser.add_argument('--upload-config', action='store_true', help='Загрузить и применить конфига')
 
