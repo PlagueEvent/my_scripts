@@ -4,7 +4,7 @@
 curl -XGET 'http://10.206.148.120:9200/msr_vk/_search?pretty' -H 'Content-Type: application/json' -d '{
 "query" : {
 "term" : {
-"data.snils" : "17904734597"
+"data.snils" : "12966373395"
    }
   }
 }'

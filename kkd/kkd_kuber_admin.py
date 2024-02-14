@@ -65,7 +65,7 @@ def inner_pod_command(route, name,command):
     return str
 
 #Делаем дамп конфиг файла
-def get_dump(route,command,  cluster_name):
+def get_dump(route,command,cluster_name):
     cluster_name = cluster_name
     tar_name = f'config_{{cluster_name}}_{{date}}.tar.gz'.format(cluster_name=cluster_name, date=date)
     name = get_pod_name('kkd-ctl', command)
@@ -135,13 +135,15 @@ if __name__ == '__main__':
         if args.test == True:
             get_pod_name("kkd-ctl", command)
     except:
-        print('ОШИБКАБЛЕАТЬ!!!!1111: не указан целевой контур')
+        print('ОШИБКАБЛЕАТЬ!!!!1111: во время дампа')
+
 
     try:
         if args.get_dump == True:
             get_dump(route, command, cluster_name)
     except:
         print('ОШИБКАБЛЕАТЬ!!!!1111: во время дампа')
+
 
     try:
         if args.upload_config == True:
