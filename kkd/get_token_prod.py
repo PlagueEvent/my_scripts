@@ -10,7 +10,7 @@ except:
     print('Can`t establish connection to database')
 
 cursor = conn.cursor()
-sql_command = "select token, user_id, status from msp_admin_service.tokens where status = 'ALLOWED' AND user_id = '67' limit 3;"
+sql_command = "select token, user_id, status from msp_admin_service.tokens where status = 'ALLOWED' AND user_id = '67' limit 5;"
 cursor.execute(sql_command)
 tokens = cursor.fetchall()
 
