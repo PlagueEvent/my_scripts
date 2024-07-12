@@ -26,25 +26,28 @@ case "$kafkaread" in
 		prefix=pr
   	producer=producer_mirror_adh_cluster.properties 
 		consumer=consumer-mirror-$prefix-$servicename.properties 
+
 		;;
   3) 
 		bootstrap="10.207.33.197:9092"
 		prefix=pp
 	  producer=consumer-mirror-$prefix-$servicename.properties 
 		consumer=producer_mirror_adh_nt_cluster.properties 
+
 		;;
 	4)	
 		bootstrap="10.207.33.132:9092,10.207.33.133:9092,10.207.33.134:9092"
 		prefix=pr
 	  producer=consumer-mirror-$prefix-$servicename.properties 
 		consumer=producer_mirror_adh_nt_cluster.properties 
+
 		;;
 
 esac
 
 #пилим демона
 #cat << EOF | tee kafka-mirror-$prefix-$servicename.service
-cat << EOF | tee /etc/systemd/system/kafka-mirror-$prefix-$servicename.service
+cat << EOF | tee kafka-mirror-$prefix-$servicename.service
 [Unit]
 Description=KafkaMirror Daemon 
 Documentation=https://kafka.apache.org/documentation/
@@ -63,8 +66,10 @@ Restart=on-failure
 WantedBy=default.target
 EOF
 
+#echo "add new-$prefix-$servicename.sh to $bootstrap servier(s)"
+#пилим файлы /opt/hadoop/ если топиков в задаче больше одного, то затем можно их добавить в whitelist
 #start.sh
-cat << EOF | tee /opt/hadoop/kafka-mirror-$prefix-$servicename-start.sh
+cat << EOF | tee kafka-mirror-$prefix-$servicename-start.sh
 #!/bin/bash
 echo "mirror maker restarted \$(date)">>/opt/hadoop/kafka/logs/mirror-$prefix-$servicename.log
 cd /opt/hadoop/kafka/bin/
@@ -79,7 +84,7 @@ export KAFKA_HEAP_OPTS=-Xmx384M
 EOF
 
 #stop.sh
-cat << EOF | tee /opt/hadoop/kafka-mirror-$prefix-$servicename-stop.sh
+cat << EOF | tee kafka-mirror-$prefix-$servicename-stop.sh
 #cat << EOF | tee kafka-mirror-$prefix-$servicename-stop.sh
 #!/bin/sh
 SIGNAL=\${SIGNAL:-TERM}
@@ -96,7 +101,8 @@ fi
 EOF
 
 #файл /opt/hadoop/kafka/config_local/*.properties
-cat << EOF | tee /opt/hadoop/kafka/config_local/consumer-mirror-$prefix-$servicename.properties
+#cat << EOF | tee kafka-mirror-$prefix-$servicename.properties 
+cat << EOF | tee consumer-mirror-$prefix-$servicename.properties
 bootstrap.servers=$bootstrap
 group.id=udrvs_adh_cluster_pr_ern
 partition.assignment.strategy=org.apache.kafka.clients.consumer.RoundRobinAssignor
@@ -108,20 +114,25 @@ max.partition.fetch.bytes = 26428700
 EOF
 
 # /opt/hadoop/kafka/bin/ 
-cat << EOF | tee /opt/hadoop/kafka/bin/kafka-mirror-$prefix-$servicename.sh
+#cat << EOF | tee kafka-mirror-$prefix-$servicename.sh
+cat << EOF | tee kafka-mirror-$prefix-$servicename.sh
 #!/bin/bash
 exec \$(dirname $0)/kafka-run-$prefix-$servicename-class.sh kafka.tools.MirrorMaker "\$@"
 EOF
 
 #последний этап
-cp /opt/hadoop/kafka/bin/kafka-run-class.sh -va /opt/hadoop/kafka/bin/kafka-run-$prefix-$servicename-class.sh
+#cp /opt/hadoop/kafka/bin/kafka-run-class.sh -va /opt/hadoop/kafka/bin/kafka-run-$prefix-$servicename-class.sh
 
-chown -R local_kafka:local_kafka /opt/hadoop/
-chmod 755  /opt/hadoop/kafka/bin/kafka-mirror-$prefix-$servicename.sh
-chmod 644  /opt/hadoop/kafka/config_local/kafka-mirror-$prefix-$servicename.properties
-chmod 755  /opt/hadoop/kafka-mirror-$prefix-$servicename-start.sh
-chmod 755  /opt/hadoop/kafka-mirror-$prefix-$servicename-stop.sh
+#chown -R local_kafka:local_kafka /opt/hadoop/
+#chmod 755  kafka-run-$prefix-$servicename-class.sh
+chmod 755  kafka-mirror-$prefix-$servicename.sh
+chmod 755  kafka-mirror-$prefix-$servicename-start.sh
+chmod 755  kafka-mirror-$prefix-$servicename-stop.sh
 
-echo "--------------------------------------------------------------------------------------------------------"
-echo "Запустить: kafka-mirror-$prefix-$servicename.service"
+echo "---------------------------------------"
+echo "kafka-mirror-$prefix-$servicename.service"
+
+#/usr/bin/systemctl daemon-reload
+#systetmctl enable --now kafka-mirror-$prefix-$servicename.service
+#/usr/bin/systemctl status networking.service
 
